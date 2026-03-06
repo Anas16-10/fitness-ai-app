@@ -9,11 +9,14 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { TopNav } from "@/components/ui/TopNav";
 import { Card } from "@/components/ui/Card";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
@@ -63,7 +66,14 @@ export default function ResetPasswordPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors">
             <TopNav />
             <main className="mx-auto flex max-w-md items-center justify-center px-4 py-12">
-                <Card title="Update Password" className="w-full">
+                <Card className="w-full">
+                    <div className="mb-8 text-center">
+                        <h1 className="mb-2 text-3xl font-black text-slate-900 dark:text-white tracking-tight">Set New Password</h1>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                            Choose a secure password to protect your account.
+                        </p>
+                    </div>
+
                     {success ? (
                         <div className="text-center py-4">
                             <div className="mb-4 text-4xl text-green-500">✅</div>
@@ -74,39 +84,53 @@ export default function ResetPasswordPage() {
                         </div>
                     ) : (
                         <>
-                            <p className="mb-6 text-xs text-slate-600 dark:text-slate-400 font-medium">
-                                Please enter your new password below to regain access to your account.
-                            </p>
-
                             <form onSubmit={handleReset} className="space-y-4 text-sm">
                                 <div>
                                     <label className="mb-1.5 block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
                                         New Password
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                        className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm"
-                                        placeholder="Min. 6 characters"
-                                        disabled={loading}
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                            className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm pr-10"
+                                            placeholder="Min. 6 characters"
+                                            disabled={loading}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div>
                                     <label className="mb-1.5 block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
                                         Confirm New Password
                                     </label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                        className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm"
-                                        placeholder="Repeat password"
-                                        disabled={loading}
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm pr-10"
+                                            placeholder="Repeat password"
+                                            disabled={loading}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {error && (
@@ -118,7 +142,7 @@ export default function ResetPasswordPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full rounded-full bg-blue-600 px-4 py-3 text-xs font-black text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg active:scale-95"
+                                    className="w-full rounded-full bg-blue-600 px-4 py-3 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg active:scale-95"
                                 >
                                     {loading ? "Updating..." : "Set New Password"}
                                 </button>
@@ -130,3 +154,4 @@ export default function ResetPasswordPage() {
         </div>
     );
 }
+

@@ -52,6 +52,11 @@ export default function ForgotPasswordPage() {
           "If an account exists with this email, you will receive a password reset link shortly. Please check your inbox."
         );
         setEmail(""); // Clear the email field
+
+        // Redirect to login after a delay
+        setTimeout(() => {
+          router.push("/login");
+        }, 3000);
       }
     } catch (err: any) {
       console.error("Unexpected error:", err);
@@ -65,17 +70,19 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen">
       <TopNav />
       <main className="mx-auto flex max-w-md items-center justify-center px-4 py-12">
-        <Card title="Reset Password" className="w-full">
-          <p className="mb-4 text-xs text-gray-600">
-            Enter your email address and we'll send you a link to reset your
-            password.
-          </p>
+        <Card className="w-full">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 text-3xl font-black text-slate-900 dark:text-white tracking-tight">Forgot Password?</h1>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Don't worry, we'll help you get back in.
+            </p>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4 text-sm">
             <div>
               <label
                 htmlFor="email"
-                className="mb-1 block text-xs font-medium text-gray-700"
+                className="mb-1.5 block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight"
               >
                 Email Address
               </label>
@@ -85,37 +92,40 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-blue-500"
+                className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm"
                 placeholder="your.email@example.com"
                 disabled={loading}
               />
             </div>
 
             {error && (
-              <div className="rounded-md bg-red-50 border border-red-200 p-2">
-                <p className="text-xs text-red-700">{error}</p>
+              <div className="rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 p-3">
+                <p className="text-xs text-red-700 dark:text-red-400 font-bold">{error}</p>
               </div>
             )}
 
             {message && (
-              <div className="rounded-md bg-green-50 border border-green-200 p-2">
-                <p className="text-xs text-green-700">{message}</p>
+              <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 p-3">
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold">{message}</p>
+                <p className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-500 animate-pulse">
+                  Redirecting to login...
+                </p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full rounded-full bg-blue-600 px-4 py-3 text-sm font-black text-white hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-lg active:scale-95"
             >
               {loading ? "Sending..." : "Send Reset Link"}
             </button>
 
-            <div className="text-center">
+            <div className="text-center pt-2">
               <button
                 type="button"
                 onClick={() => router.push("/login")}
-                className="text-xs text-blue-600 hover:text-blue-700 hover:underline"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 uppercase tracking-wider"
               >
                 Back to Login
               </button>
@@ -123,6 +133,7 @@ export default function ForgotPasswordPage() {
           </form>
         </Card>
       </main>
+
     </div>
   );
 }
