@@ -5,12 +5,12 @@ import { supabase } from "@/lib/supabase";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 interface AuthFormProps {
-    initialView?: "login" | "signup";
+    initialView?: "login" | "signup" | "forgot_password";
     onSuccess?: (view: "login" | "signup") => void;
 }
 
 export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
-    const [view, setView] = useState<"login" | "signup">(initialView);
+    const [view, setView] = useState<"login" | "signup" | "forgot_password">(initialView);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +32,7 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
                 });
                 if (signInError) throw signInError;
                 onSuccess?.("login");
-            } else {
+            } else if (view === "signup") {
                 const { error: signUpError } = await supabase.auth.signUp({
                     email,
                     password,
@@ -44,6 +44,21 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
 
                 setSuccessMsg("Account created! Please check your email for a verification link.");
                 // Switch to login view after successful signup
+                setTimeout(() => {
+                    setView("login");
+                    setSuccessMsg(null);
+                }, 5000);
+            } else if (view === "forgot_password") {
+                const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+                    email,
+                    {
+                        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+                    }
+                );
+                if (resetError) throw resetError;
+
+                setSuccessMsg("Check your email for the password reset link.");
+                // Switch back to login after a delay
                 setTimeout(() => {
                     setView("login");
                     setSuccessMsg(null);
@@ -60,12 +75,14 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
         <div className="w-full">
             <div className="mb-8 text-center">
                 <h1 className="mb-2 text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-                    {view === "login" ? "Welcome back" : "Create Account"}
+                    {view === "login" ? "Welcome back" : view === "signup" ? "Create Account" : "Forgot Password?"}
                 </h1>
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     {view === "login"
                         ? "Log in to continue your fitness journey."
-                        : "Join us and start tracking your progress today."}
+                        : view === "signup"
+                            ? "Join us and start tracking your progress today."
+                            : "Don't worry, we'll help you get back in."}
                 </p>
             </div>
 
@@ -84,28 +101,30 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
                     />
                 </div>
 
-                <div>
-                    <label className="mb-1.5 block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
-                        Password
-                    </label>
-                    <div className="relative">
-                        <input
-                            type={showPassword ? "text" : "password"}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm pr-10"
-                            placeholder="••••••••"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                        >
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
+                {view !== "forgot_password" && (
+                    <div>
+                        <label className="mb-1.5 block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                className="w-full rounded-lg border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm text-gray-900 dark:text-white outline-none focus:border-blue-500 transition-all shadow-sm pr-10"
+                                placeholder="••••••••"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {error && (
                     <div className="rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 p-3">
@@ -114,8 +133,11 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
                 )}
 
                 {successMsg && (
-                    <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 p-3">
+                    <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
                         <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold">{successMsg}</p>
+                        <p className="mt-2 text-[10px] text-emerald-600 dark:text-emerald-500 animate-pulse">
+                            Returning to login...
+                        </p>
                     </div>
                 )}
 
@@ -127,7 +149,7 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
                     {loading ? (
                         <Loader2 className="animate-spin" size={18} />
                     ) : (
-                        view === "login" ? "Log In" : "Sign Up"
+                        view === "login" ? "Log In" : view === "signup" ? "Sign Up" : "Send Reset Link"
                     )}
                 </button>
 
@@ -151,7 +173,11 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
                     <div className="text-center mt-2">
                         <button
                             type="button"
-                            onClick={() => window.location.href = "/forgot-password"}
+                            onClick={() => {
+                                setView("forgot_password");
+                                setError(null);
+                                setSuccessMsg(null);
+                            }}
                             className="text-[10px] font-bold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 uppercase tracking-widest"
                         >
                             Forgot your password?
@@ -162,3 +188,4 @@ export function AuthForm({ initialView = "login", onSuccess }: AuthFormProps) {
         </div>
     );
 }
+
