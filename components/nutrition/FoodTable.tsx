@@ -20,7 +20,8 @@ export function FoodTable({ foods, onDelete }: FoodTableProps) {
           No foods logged yet today. Search above to add your first entry.
         </p>
       ) : (
-        <div className="max-h-80 overflow-y-auto text-xs">
+        <div className="max-h-80 overflow-x-auto overflow-y-auto text-xs no-scrollbar">
+
           <table className="min-w-full border-collapse">
             <thead>
               <tr className="border-b border-gray-200 text-[11px] text-gray-500">
