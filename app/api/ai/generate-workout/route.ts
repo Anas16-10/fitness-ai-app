@@ -33,32 +33,7 @@ export async function POST(request: Request) {
     }
 
     // ---------------------------
-    // 1. Rate-limit user (30s cooldown)
-    // ---------------------------
-    const { data: lastCall } = await supabase
-      .from("ai_usage")
-      .select("created_at")
-      .eq("user_id", userId)
-      .eq("endpoint", "workout_plan")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (lastCall && new Date().getTime() - new Date(lastCall.created_at).getTime() < 30_000) {
-      return NextResponse.json(
-        { success: false, error: "Please wait 30 seconds before generating another workout plan." },
-        { status: 429 }
-      );
-    }
-
-    await supabase.from("ai_usage").insert({
-      user_id: userId,
-      endpoint: "workout_plan",
-      created_at: new Date().toISOString(),
-    });
-
-    // ---------------------------
-    // 2. Check for cached plan (last 24h)
+    // 1. Check for cached plan (last 24h)
     // ---------------------------
     const { data: cachedPlan } = await supabase
       .from("workout_plans")
