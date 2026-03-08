@@ -86,21 +86,7 @@ export async function POST(request: Request) {
     const adviceJson = aiResponse.data;
     const adviceText = JSON.stringify(adviceJson, null, 2);
 
-    // 4. Save to database (optional)
-    try {
-      const { error: insertError } = await supabase.from("ai_recommendations").insert({
-        user_id: userId,
-        type: "diet",
-        content: adviceText, // Store the stringified version for now
-        created_at: new Date().toISOString(),
-      });
-
-      if (insertError) console.error("[Diet Advice] Database insert error:", insertError);
-    } catch (dbError) {
-      console.error("[Diet Advice] Database error (non-fatal):", dbError);
-    }
-
-    // 5. Return response
+    // 4. Return response (No database insert for performance and storage savings)
     return NextResponse.json({
       success: true,
       data: adviceJson,
