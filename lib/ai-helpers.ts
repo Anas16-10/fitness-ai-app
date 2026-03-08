@@ -43,22 +43,28 @@ export type AIResponse<T> = {
  */
 export async function generateWorkoutPlan(profile?: UserProfile | null): Promise<AIResponse<any>> {
     try {
-        const model = getGeminiModel();
+        const model = getGeminiModel("gemini-2.5-flash");
 
-        // Using responseMimeType to force JSON output
         const generationConfig = {
-            temperature: 0.7,
+            temperature: 0.4,
             responseMimeType: "application/json",
         };
+
 
         const prompt = `You are an expert fitness coach creating a personalized 7-day workout plan.
 
 ${buildProfileContext(profile)}
 
 Create a 7-day workout plan:
+
 1. Match the user's experience level and activity level.
 2. Align with their primary goal.
 3. Include specific exercises, sets, reps, and rest periods.
+
+Important rule:
+- Day 7 MUST be a Rest or Active Recovery day.
+- Do not include intense exercises on Day 7.
+- Suggested recovery activities can include light walking, stretching, yoga, or mobility work.
 
 Output ONLY a valid JSON object with the following structure:
 {
@@ -104,10 +110,10 @@ export async function generateDietPlan(
     todayNutrition?: { calories: number; protein: number; carbs: number; fat: number }
 ): Promise<AIResponse<any>> {
     try {
-        const model = getGeminiModel();
+        const model = getGeminiModel("gemini-3.1-flash-lite-preview");
 
         const generationConfig = {
-            temperature: 0.7,
+            temperature: 0.4,
             responseMimeType: "application/json",
         };
 
@@ -119,15 +125,35 @@ export async function generateDietPlan(
 - Fat: ${todayNutrition.fat} g`
             : "No nutrition logged for today yet.";
 
-        const prompt = `You are a professional nutrition coach providing dietary advice.
+        const prompt = `You are a professional nutrition coach providing precise dietary advice.
 
 ${buildProfileContext(profile)}
 
 ${nutritionContext}
 
-Recommend specific diet changes, example meals, and macro targets based on their profile and today's intake.
+If some information is missing, make reasonable assumptions.
 
-Output ONLY a valid JSON object with the following structure:
+Based on the user's profile, goal, and today's nutrition intake:
+
+- Determine whether they are under, over, or near their macro targets
+- Suggest realistic diet improvements
+- Recommend meals that help them reach targets
+- Adjust macro targets appropriately
+
+Guidelines:
+- Recommendations must be practical
+- Consider fat loss, muscle gain, or maintenance goals
+- If today's intake already meets targets, give maintenance advice instead of corrections
+
+Limits:
+- Maximum 4 recommendations
+- Maximum 3 example meals
+- Summary must be under 60 words
+
+Return ONLY valid JSON. Do NOT include explanations, markdown, or extra text.
+
+Format:
+
 {
   "daily_macro_targets": {
     "calories": 2000,
@@ -137,15 +163,15 @@ Output ONLY a valid JSON object with the following structure:
   },
   "recommendations": [
     "Eat more protein with breakfast",
-    "Drink 3L of water"
+    "Drink at least 3 liters of water daily"
   ],
   "example_meals": [
     {
       "meal": "Breakfast",
-      "suggestion": "Oatmeal with protein powder and berries"
+      "suggestion": "Oatmeal with protein powder, chia seeds, and berries"
     }
   ],
-  "summary": "Brief encouraging summary of their nutrition."
+  "summary": "Short encouraging summary under 60 words."
 }`;
 
         const result = await model.generateContent({
@@ -178,10 +204,10 @@ export async function generateWeeklyReport(
     }
 ): Promise<AIResponse<any>> {
     try {
-        const model = getGeminiModel();
+        const model = getGeminiModel("gemini-3.1-flash-lite-preview");
 
         const generationConfig = {
-            temperature: 0.7,
+            temperature: 0.4,
             responseMimeType: "application/json",
         };
 
@@ -201,14 +227,30 @@ ${buildProfileContext(profile)}
 
 ${statsContext}
 
-Generate a comprehensive weekly progress report.
+If some data is missing, still provide useful guidance.
 
-Output ONLY a valid JSON object with the following structure:
+Analyze the user's weekly progress and provide insights.
+
+Focus on:
+- overall progress
+- strengths
+- areas for improvement
+- strategy for next week
+
+Limits:
+- Maximum 3 strengths
+- Maximum 3 improvement areas
+- Strategy under 80 words
+
+Return ONLY valid JSON. Do NOT include explanations, markdown, or extra text.
+
+Format:
+
 {
-  "summary_message": "General encouraging message about their week.",
+  "summary_message": "Encouraging summary under 60 words.",
   "strengths": ["Consistent workouts", "Good protein intake"],
   "areas_for_improvement": ["Track meals more carefully"],
-  "next_week_strategy": "Focus on progressive overload and hitting calorie targets exactly.",
+  "next_week_strategy": "Focus on progressive overload and hitting calorie targets consistently.",
   "score_out_of_10": 8
 }`;
 

@@ -15,10 +15,17 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
+import {
+  calculateBMR,
+  calculateTDEE,
+  calculateDailyCaloriesFromTDEE,
+} from "@/lib/fitness";
 
 export function WeeklyCaloriesChart() {
   const [data, setData] = useState<{ date: string; calories: number }[]>([]);
+  const [targetCalories, setTargetCalories] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +64,22 @@ export function WeeklyCaloriesChart() {
         return;
       }
 
+      // Fetch Profile for Targets
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("age, height, weight, gender, goal, activity_level")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData && profileData.age && profileData.weight && profileData.height && profileData.gender && profileData.activity_level && profileData.goal) {
+        const bmr = calculateBMR(profileData.age, profileData.weight, profileData.height, profileData.gender as any);
+        if (bmr) {
+          const tdee = calculateTDEE(bmr, profileData.activity_level as any);
+          const target = calculateDailyCaloriesFromTDEE(tdee, profileData.goal as any);
+          setTargetCalories(target);
+        }
+      }
+
       // Group by date and sum calories.
       const dailyTotals: Record<string, number> = {};
       (logs ?? []).forEach((log: NutritionLog) => {
@@ -68,8 +91,7 @@ export function WeeklyCaloriesChart() {
       const chartData = Object.entries(dailyTotals)
         .map(([date, calories]) => ({
           date: new Date(date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
+            weekday: "short",
           }),
           calories: Math.round(calories),
         }))
@@ -130,6 +152,9 @@ export function WeeklyCaloriesChart() {
               }}
               itemStyle={{ color: '#f97316' }}
             />
+            {targetCalories && (
+              <ReferenceLine y={targetCalories} stroke="#334155" strokeDasharray="4 4" strokeWidth={2} label={{ position: 'top', value: `Goal: ${targetCalories}`, fill: '#334155', fontSize: 11, fontWeight: '900' }} />
+            )}
             <Bar dataKey="calories" fill="#f97316" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

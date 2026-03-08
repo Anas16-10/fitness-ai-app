@@ -152,7 +152,7 @@ export function AICoach({ mode = "all" }: AICoachProps) {
               {loading && activeTab === "diet" ? "Calculating Macros..." : "Get Diet Advice"}
             </button>
           )}
-          {(mode === "all" || mode === "weekly") && (
+          {(mode === "all" || mode === "weekly") && new Date().getDay() === 0 && (
             <button
               type="button"
               onClick={() => callAIEndpoint("weekly", "/api/ai/weekly-report", setWeeklyReport)}

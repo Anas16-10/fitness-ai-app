@@ -15,10 +15,18 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
+import {
+  calculateBMR,
+  calculateTDEE,
+  calculateDailyCaloriesFromTDEE,
+  calculateMacroTargets,
+} from "@/lib/fitness";
 
 export function WeeklyProteinChart() {
   const [data, setData] = useState<{ date: string; protein: number }[]>([]);
+  const [targetProtein, setTargetProtein] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +65,23 @@ export function WeeklyProteinChart() {
         return;
       }
 
+      // Fetch Profile for Targets
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("age, height, weight, gender, goal, activity_level")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData && profileData.age && profileData.weight && profileData.height && profileData.gender && profileData.activity_level && profileData.goal) {
+        const bmr = calculateBMR(profileData.age, profileData.weight, profileData.height, profileData.gender as any);
+        if (bmr) {
+          const tdee = calculateTDEE(bmr, profileData.activity_level as any);
+          const targetCalories = calculateDailyCaloriesFromTDEE(tdee, profileData.goal as any);
+          const macros = calculateMacroTargets(targetCalories);
+          setTargetProtein(macros.protein);
+        }
+      }
+
       // Group by date and sum protein.
       const dailyTotals: Record<string, number> = {};
       (logs ?? []).forEach((log: NutritionLog) => {
@@ -68,8 +93,7 @@ export function WeeklyProteinChart() {
       const chartData = Object.entries(dailyTotals)
         .map(([date, protein]) => ({
           date: new Date(date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
+            weekday: "short",
           }),
           protein: Math.round(protein),
         }))
@@ -130,6 +154,9 @@ export function WeeklyProteinChart() {
               }}
               itemStyle={{ color: '#10b981' }}
             />
+            {targetProtein && (
+              <ReferenceLine y={targetProtein} stroke="#334155" strokeDasharray="4 4" strokeWidth={2} label={{ position: 'top', value: `Goal: ${targetProtein}g`, fill: '#334155', fontSize: 11, fontWeight: '900' }} />
+            )}
             <Bar dataKey="protein" fill="#10b981" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

@@ -17,11 +17,11 @@ export async function updateWorkoutStreak(userId: string): Promise<number> {
     return 0;
   }
 
-  const todayStr = getLocalDateString();
-  const yesterdayStr = getYesterdayDateString();
-
   const currentStreak = profile?.workout_streak ?? 0;
   const lastWorkoutDate = profile?.last_workout_date; // YYYY-MM-DD
+
+  const todayStr = getLocalDateString();
+  const yesterdayStr = getYesterdayDateString();
 
   if (lastWorkoutDate === todayStr) {
     // Already worked out today, no change to streak
@@ -33,11 +33,9 @@ export async function updateWorkoutStreak(userId: string): Promise<number> {
   if (lastWorkoutDate === yesterdayStr) {
     // Consecutive day, increment streak
     newStreak = currentStreak + 1;
-  } else {
-    // Gap in training, reset to 1
+  } else if (!lastWorkoutDate) {
     newStreak = 1;
   }
-
 
   // Update profile with new streak and today's date.
   const { error: updateError } = await supabase

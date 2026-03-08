@@ -60,15 +60,15 @@ export function DietPlanRenderer({ data }: Props) {
             <div className="grid md:grid-cols-2 gap-6">
                 {example_meals && example_meals.length > 0 && (
                     <div>
-                        <h3 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                             <span className="p-1 bg-yellow-100 text-yellow-700 rounded-md">🍽️</span>
                             Example Meals
                         </h3>
                         <div className="space-y-3">
                             {example_meals.map((meal, idx) => (
-                                <div key={idx} className="p-3 border rounded-lg bg-white shadow-sm flex flex-col">
-                                    <span className="text-xs font-bold text-emerald-600 uppercase mb-1">{meal.meal}</span>
-                                    <span className="text-sm text-gray-700">{meal.suggestion}</span>
+                                <div key={idx} className="p-3 border rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700 shadow-sm flex flex-col">
+                                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase mb-1">{meal.meal}</span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{meal.suggestion}</span>
                                 </div>
                             ))}
                         </div>
@@ -77,13 +77,13 @@ export function DietPlanRenderer({ data }: Props) {
 
                 {recommendations && recommendations.length > 0 && (
                     <div>
-                        <h3 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                        <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2">
                             <span className="p-1 bg-blue-100 text-blue-700 rounded-md">💡</span>
                             Recommendations
                         </h3>
                         <ul className="space-y-2">
                             {recommendations.map((rec, idx) => (
-                                <li key={idx} className="flex gap-2 text-sm text-gray-700 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                <li key={idx} className="flex gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 p-2 rounded-lg border border-gray-100 dark:border-slate-700">
                                     <span className="text-emerald-500 mt-0.5">•</span>
                                     <span>{rec}</span>
                                 </li>

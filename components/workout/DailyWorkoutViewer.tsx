@@ -19,7 +19,8 @@ export function DailyWorkoutViewer({ userId, onSelectExercise }: DailyWorkoutVie
         async function fetchLatestPlan() {
             setLoading(true);
             try {
-                const { data, error } = await supabase
+                // 1. Fetch AI Plan
+                const { data: planData, error: planError } = await supabase
                     .from("workout_plans")
                     .select("plan_json, created_at")
                     .eq("user_id", userId)
@@ -27,16 +28,36 @@ export function DailyWorkoutViewer({ userId, onSelectExercise }: DailyWorkoutVie
                     .limit(1)
                     .single();
 
-                if (error || !data || !data.plan_json?.week_plan) {
+                if (planError || !planData || !planData.plan_json?.week_plan) {
                     setTodaysPlan(null);
                     return;
                 }
 
-                // Extremely simple logic: finding today's day from 1-7 (Mon-Sun)
-                const dayOfWeek = (new Date().getDay() + 6) % 7; // Monday = 0, Sunday = 6
+                // 2. Fetch Today's Logs to filter out exercises already completed
+                const todayStr = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
+                const { data: logsData, error: logsError } = await supabase
+                    .from("workout_logs")
+                    .select("exercise")
+                    .eq("user_id", userId)
+                    .gte("created_at", `${todayStr}T00:00:00.000Z`)
+                    .lte("created_at", `${todayStr}T23:59:59.999Z`);
 
-                // Match day by index basically or if they have "Day X"
-                const planForToday = data.plan_json.week_plan[dayOfWeek] || data.plan_json.week_plan[0];
+                const loggedExercises = new Set(
+                    (logsData || []).map(log => log.exercise.toLowerCase())
+                );
+
+                const dayOfWeek = (new Date().getDay() + 6) % 7;
+                let planForToday = planData.plan_json.week_plan[dayOfWeek] || planData.plan_json.week_plan[0];
+
+                if (planForToday && planForToday.exercises) {
+                    planForToday = {
+                        ...planForToday,
+                        exercises: planForToday.exercises.filter(
+                            (ex: any) => !loggedExercises.has(ex.exercise.toLowerCase())
+                        )
+                    };
+                }
+
                 setTodaysPlan(planForToday);
 
             } catch (err) {
