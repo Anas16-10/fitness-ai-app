@@ -10,6 +10,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/Card";
 import { searchFood, searchFoodsAutocomplete, USDAFoodResult } from "@/lib/usda";
+import { getLocalDateString } from "@/lib/date-utils";
 
 interface FoodSearchProps {
   onAddFood: (food: USDAFoodResult & { quantity: string }) => void;

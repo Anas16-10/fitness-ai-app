@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
+import { getLocalDateString } from "@/lib/date-utils";
 
 interface NutritionFormProps {
   onSaved?: () => void;
@@ -53,7 +54,7 @@ export function NutritionForm({ onSaved }: NutritionFormProps) {
         return;
       }
 
-      const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+      const todayStr = getLocalDateString();
 
       const { error: insertError } = await supabase
         .from("nutrition_logs")
