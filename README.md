@@ -44,6 +44,6 @@ Fitness AI Coach is a comprehensive Next.js web application that leverages the p
 ## Workflow
 
 1. **Profile Setup**: Complete your profile parameters to tune the AI model.
-2. **Generate Pro Plan**: Go to the AI Coach section on your dashboard to request a 7-day personalized workout split.
+2. **Generate Pro Plan**: Go to the AI Coach section on your Workout dashboard to request a 7-day personalized workout split.
 3. **Log & Progress**: Go to "Log Workout" and track your sets. The AI generated schedule updates dynamically as you lift!
 4. **Consistency**: Keep the streak alive every single day!
